@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: healthpulse-dev
+  namespace: argocd
+  labels:
+    app: healthpulse
+    environment: dev
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io  # Deletes app resources when this Application is deleted
+spec:
+  project: default
+  source:
+    repoURL: https://gitlab.com/your-group/healthpulse-cd.git   # <-- must end in .git
+    targetRevision: main
+    path: kubernetes/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: healthpulse-dev
+  syncPolicy:
+    automated:
+      prune: true           # Remove resources deleted from Git
+      selfHeal: true        # Revert manual kubectl changes (drift protection)
+      allowEmpty: false     # Safety: refuse sync if kustomize build returns 0 resources
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true   # Recommended for Argo CD 3.x
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
