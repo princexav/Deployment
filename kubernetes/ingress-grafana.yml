@@ -1,0 +1,28 @@
+# =============================================================
+#  Grafana Ingress -- Traefik routing on k3s
+#
+#  Routes: grafana.team-healthpulse.com -> monitoring-grafana svc
+#  Apply:  kubectl apply -f kubernetes/ingress-grafana.yml
+#
+#  No DNS changes needed -- the wildcard record
+#  (*.team-healthpulse.com) already covers this subdomain.
+# =============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: grafana.team-healthpulse.com    # <- Replace with YOUR domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: monitoring-grafana
+                port:
+                  number: 80
