@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: healthpulse-uat
+  namespace: argocd
+  labels:
+    app: healthpulse
+    environment: uat
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://gitlab.com/your-group/healthpulse-cd.git   # <-- must end in .git
+    targetRevision: main
+    path: kubernetes/overlays/uat
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: healthpulse-uat
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    # No 'automated' block -- operator must click Sync in Argo CD UI
